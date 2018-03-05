@@ -1,5 +1,5 @@
 function output = tapeSaturate(signal, knob, varargin)
-% tapeSaturate uses a soft curve to saturate an input signal, similar to
+% TAPESATURATE uses a soft curve to saturate an input signal, similar to
 %	the distortion caused by loud signals on magnetic tape. The inputted
 %	signal is first normalized then saturated, so the outputted signal will
 %	be much louder than the input. You can adjust this with the optional
@@ -17,12 +17,12 @@ function output = tapeSaturate(signal, knob, varargin)
 %               signal by, in order to reduce volume. default value is 1.
 % 
 % Example usage: 
-%   output = tapeSaturate(signal, 5, 0.5);
+%   output = TAPESATURATE(signal, 5, 0.5);
 % Interpretation:
 %   saturates (distorts) the signal at a strength of 5/10. The outputted
 %   signal is then reduced to 0.5x the normalized amplitude. 
 %
-% github.com/amacraek/m_fx/
+% github.com/amacraek/m_afx/
 % Alex MacRae-Korobkov 2018
 
     %% parsing inputs 

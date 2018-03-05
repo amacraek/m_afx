@@ -1,6 +1,6 @@
 function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
                                  exp_threshold, exp_slope, varargin)
-% stereoDynamics is a simple compresser/expander pair that processes each
+% STEREODYNAMICS is a simple compresser/expander pair that processes each
 %   inputted channel separately. It uses the root-mean-square amplitude of
 %   the input signal to dynamically scale the output. It also uses a simple
 %   attack/release envelope to preserve natural dynamics. It can handle 
@@ -38,7 +38,7 @@ function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
 %   compressed signal matrix with the same size as input. 
 %
 % Example usage:
-%   output = stereoDynamics(signal, -15, 0.3, -25, -0.05, 'rms_width', 0.2)
+%   output = STEREODYNAMICS(signal, -15, 0.3, -25, -0.05, 'rms_width', 0.2)
 % Interpretation:
 %       Returns a modified signal with compression of 0.3 starting at  
 %       -15dB, expansion of -0.05 starting at -25dB, rms_width narrowed to 
@@ -46,7 +46,7 @@ function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
 %
 % See also linearNormalize. 
 %
-% github.com/amacraek/m_fx/
+% github.com/amacraek/m_afx/
 % Alex MacRae-Korobkov 2018
 
 %% parsing inputs

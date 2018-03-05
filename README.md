@@ -1,5 +1,6 @@
-# m_fx
- - MATLAB Digital Signal Processing and Audio Effects
+# m_afx
+MATLAB Digital Signal Processing and Audio Effects
+Alex MacRae-Korobkov 2018
 
 ## Purpose
 The purpose of this repository is to offer insight into digital (i.e. discrete) signal processing, specifically **in the context of audio engineering** applications. Though there might practical applications for this repository, it is designed primarily for **educational purposes,** and as such the code will contain long (and ugly) comment blocks in which I try to add context and develop understanding.
@@ -16,5 +17,13 @@ No, you can even just read the code! The code is extensively commented, and it a
 ### How do I use this without MATLAB?
 The code should be easy to translate to most other languages. Were you to use this code outside of MATLAB, the only difficulties you would probably encounter would be in translating MATLAB's matrix notation, e.g. switching from 1-indexed to 0-indexed, rewriting basic matrix functions, etc. Considering this, I would recommend Python as a free alternative, because numpy and scipy (free Python databases) will contain almost all (if not all) of the same basic functions that I use for matrix operations. 
 
-# v 0.1
+# Version history
+### v 0.2 
+Includes a simple linear normalizer, a multi-channel dynamic compresser, a tape saturator, a filter class, and a demo file.
+Changes:
+- **New filterHelper.m class with first-order allpass, lowpass, highpass, and a 'filter via coefficients' function.**
+- Fixed broken links in .m file comments
+- Renamed argument 'input' to 'signal' in functions 
+
+### v 0.1
 Includes a simple linear normalizer, a multi-channel dynamic compresser, and a tape saturator. The "demo.m" file uses the sample.wav drum loop to demonstrate the effects. 
