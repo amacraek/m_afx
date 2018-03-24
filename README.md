@@ -18,6 +18,15 @@ No, you can even just read the code! The code is extensively commented, and it a
 The code should be easy to translate to most other languages. Were you to use this code outside of MATLAB, the only difficulties you would probably encounter would be in translating MATLAB's matrix notation, e.g. switching from 1-indexed to 0-indexed, rewriting basic matrix functions, etc. Considering this, I would recommend Python as a free alternative, because numpy and scipy (free Python databases) will contain almost all (if not all) of the same basic functions that I use for matrix operations. 
 
 # Version history
+### v 0.3
+Includes a simple linear normalizer, a multi-channel dynamic compresser, a tape saturator, a filter class, a beta reverb, and a demo file.
+Changes:
+- Demo file now prints information in console.
+- All functions now include input parsing and validation (except reverb, which is in beta still).
+- **New reverb effect** which is in beta. It sounds super metallic and ringy, but will sound better for v 0.4.
+- Minor changes to comments for clarity. 
+- Now includes '44100Hz.csv'. which is a csv version of 'sample.wav' for anyone who isn't using MATLAB.
+
 ### v 0.2 
 Includes a simple linear normalizer, a multi-channel dynamic compresser, a tape saturator, a filter class, and a demo file.
 Changes:

@@ -25,15 +25,15 @@ function output = linearNormalize(signal, varargin)
     
     %% parsing inputs
     p = inputParser;
-    addRequired(p, 'signal');
+    addRequired(p, 'signal', @validSignal);
     addOptional(p, 'level', 1, @(x) (x>0));
     parse(p, signal, varargin{:});
     q = p.Results;
 
     %% set up variables 
-    max_amplitude = max(abs(q.signal(:)));
+    max_amplitude = max(abs(q.signal(:))); % max across all channels
     [samples, channels] = size(q.signal);
-    output = zeros(samples, channels);
+    output = zeros(samples, channels); % preallocate!
 
     %% normalize signal
     for sample = 1:samples
@@ -41,3 +41,10 @@ function output = linearNormalize(signal, varargin)
            (q.signal(sample,:) ./ max_amplitude) .* q.level;
     end
 end
+
+%% :+) 
+%              _                 _____________________________________
+% ____  ______/ \-.   _  _______/                                    /_____
+% __ .-/     (    o\_// _______/   By Alex MacRae-Korobkov, 2018.   /______ 
+% ___ |  ___  \_/\---'________/     github.com/amacraek/m_afx/     /_______  
+%     |_||  |_||             /____________________________________/

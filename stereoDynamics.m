@@ -51,11 +51,11 @@ function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
 
 %% parsing inputs
     p = inputParser;
-    addRequired(p, 'signal');
+    addRequired(p, 'signal', @validSignal);
     addRequired(p, 'comp_threshold', @(x) (x<0));
     addRequired(p, 'comp_slope', @(x) (x>0));
     addRequired(p, 'exp_threshold', @(x) (x<0));
-    addRequired(p, 'exp_slope');
+    addRequired(p, 'exp_slope', @(x) (isnumeric(x)));
     addParameter(p, 'rms_width', 0.1, @(x) (x>=0) && (x<=1));
     addParameter(p, 'attack', 0.05, @(x) (x>0) && (x<=1));
     addParameter(p, 'release', 0.005, @(x) (x>0) && (x<=1))
@@ -63,7 +63,8 @@ function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
           exp_threshold, exp_slope, varargin{:});
     q = p.Results;
 
-%% setting initial values     
+%% setting initial values 
+    % rms_amplitude and gain are recalculated as the filter is applied
     rms_amplitude = 0;
     gain = 1;
     [samples, channels] = size(q.signal);
@@ -118,7 +119,6 @@ function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
     end
 end
 
-
 %% acknowledgements
 %   Thanks to the wonderful publishers of the following web sources for 
 %   releasing their knowledge for free to the commons:
@@ -127,3 +127,10 @@ end
 %       http://home.btconnect.com/ssa/whitepaper/whitepaper.htm#comp
 %       http://pubmedcentralcanada.ca/pmcc/articles/PMC4111488/#section7-108471380500900202
 %       https://varietyofsound.wordpress.com/2011/01/19/compressor-gate-and-expander/
+
+%% :+) 
+%              _                 _____________________________________
+% ____  ______/ \-.   _  _______/                                    /_____
+% __ .-/     (    o\_// _______/   By Alex MacRae-Korobkov, 2018.   /______ 
+% ___ |  ___  \_/\---'________/     github.com/amacraek/m_afx/     /_______  
+%     |_||  |_||             /____________________________________/

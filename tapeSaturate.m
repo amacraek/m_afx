@@ -10,7 +10,7 @@ function output = tapeSaturate(signal, knob, varargin)
 %   knob        like a knob on a guitar pedal, this value determines the
 %               extent of the saturation effect. Minimum value is 0,
 %               maximum value is 10. You can change the max by editing line
-%               31 in the function's code. 
+%               35 in the function's code. 
 %
 % Optional arguments:
 %   gain        a value, between zero and one, to multiply the outputted
@@ -25,12 +25,16 @@ function output = tapeSaturate(signal, knob, varargin)
 % github.com/amacraek/m_afx/
 % Alex MacRae-Korobkov 2018
 
+
     %% parsing inputs 
-    p = inputParser;                    % knob's max value is 10 by default
-                                        %       |       change to (x <= 11)
-    addRequired(p, 'signal');           %       v       to turn it to 11 :)
-    addRequired(p, 'knob', @(x) (x>=0) && (x <= 10)); 
-    addOptional(p, 'gain', 1, @(x) (x>=0) && (x<=1));
+    p = inputParser;                    %      ___________________________
+                                        %     |  ____                     |
+                                        %     | |    |  knob's max value  |
+                                        %    _| |_   |   is default 10.   |          
+                                        %    \   /   |  change the value  |
+    addRequired(p, 'signal', @validSignal);%  \_/    |  to 11 so you can  |
+    addRequired(p, 'knob', @(x) (x>=0)&&(x <= 10));% | 'turn it to 11' :) |
+    addOptional(p, 'gain', 1, @(x) (x>=0)&&(x<=1));% |____________________|  
     parse(p, signal, knob, varargin{:});
     q = p.Results;
     
@@ -44,7 +48,8 @@ function output = tapeSaturate(signal, knob, varargin)
     for channel = 1:channels  % for each channel separately 
         for sample = 1:samples
             current_sample = normSignal(sample, channel);
-            
+            % basic idea is to make quieter signals louder by transforming
+            % the amplitudes with a curved function.
             % i tried a piecewise log growth function for this first, but
             % then decided to use a tanh function to transform the values
             % because it is easy to make steeper (for more saturation) and
@@ -61,3 +66,10 @@ end
 % https://www.soundonsound.com/techniques/analogue-warmth
 % desmos graphing calculator was helpful for trying out different functions
 %       to emulate tape saturation. 
+
+%% :+) 
+%              _                 _____________________________________
+% ____  ______/ \-.   _  _______/                                    /_____
+% __ .-/     (    o\_// _______/   By Alex MacRae-Korobkov, 2018.   /______ 
+% ___ |  ___  \_/\---'________/     github.com/amacraek/m_afx/     /_______  
+%     |_||  |_||             /____________________________________/
