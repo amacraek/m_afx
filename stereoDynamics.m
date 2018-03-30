@@ -44,6 +44,9 @@ function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
 %       -15dB, expansion of -0.05 starting at -25dB, rms_width narrowed to 
 %       0.2.
 %
+% Dependencies:
+%   validSignal.m 
+%
 % See also linearNormalize. 
 %
 % github.com/amacraek/m_afx/

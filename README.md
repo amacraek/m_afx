@@ -18,6 +18,15 @@ No, you can even just read the code! The code is extensively commented, and it a
 The code should be easy to translate to most other languages. Were you to use this code outside of MATLAB, the only difficulties you would probably encounter would be in translating MATLAB's matrix notation, e.g. switching from 1-indexed to 0-indexed, rewriting basic matrix functions, etc. Considering this, I would recommend Python as a free alternative, because numpy and scipy (free Python databases) will contain almost all (if not all) of the same basic functions that I use for matrix operations. 
 
 # Version history
+### v 0.4
+Includes a simple linear normalizer, a multi-channel dynamic compresser, a tape saturator, a filter class, a reverb, and a demo file.
+Changes
+- **Bugfix** in filterHelper.m: fixed error when specifying allpass1 filter purpose via optional string. 
+- **Reverb no longer in beta!** New algorithm attenuates high frequencies and has a couple new name-value pairs.
+- Demo script produces a prettier console output and displays the features more effectively -- including an FX chain!
+- Script dependencies added to documentation.
+- filterHelper.m now includes a second-order allpass filter, a bandpass, a bandreject, and a bell peak filter. 
+
 ### v 0.3
 Includes a simple linear normalizer, a multi-channel dynamic compresser, a tape saturator, a filter class, a beta reverb, and a demo file.
 Changes:

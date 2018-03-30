@@ -6,6 +6,8 @@ classdef filterHelper
     %           e.g.
     %               fh = FILTERHELPER;
     %               output = fh.coefficients([1 0 0 0], 1, signal);
+    % Dependencies:
+    %   validSignal.m 
     % References:
     % <a href="matlab:web('http://www2.cs.sfu.ca/~tamaras/filters889/Recursive_Filters.html')">[1]</a> <a href="matlab:web('https://ccrma.stanford.edu/~jos/fp/Difference_Equation_I.html')">[2]</a> <a href="matlab:web('https://en.wikipedia.org/wiki/Impulse_response')">[3]</a> <a href="matlab:web('https://ccrma.stanford.edu/realsimple/DelayVar/Phasing_First_Order_Allpass_Filters.html')">[4]</a> <a href="matlab:web('https://ccrma.stanford.edu/~jos/pasp/Allpass_Two_Combs.html')">[5]</a> 
     
@@ -46,6 +48,9 @@ classdef filterHelper
 %   by the value 2, given by the difference equation:
 %       output(n) = ( 1*signal(n) + 0.5*signal(n-1) + 0.25*signal(n-2) ...
 %                     - .125*output(n-1)) / 2
+%
+% Dependencies:
+%   validSignal.m, filterHelper.m 
 %
 % For references see filterHelper by clicking below:
 % See also filterHelper.
@@ -206,6 +211,9 @@ classdef filterHelper
 %   Returns the input signal with the phase shifted continuously over the
 %       signal, with a phase shift of -90 degrees at 5000Hz. 
 %
+% Dependencies:
+%   validSignal.m, filterHelper.m 
+%
 % For references see filterHelper by clicking below:
 % See also filterHelper.
 %
@@ -259,10 +267,10 @@ classdef filterHelper
             %       around 4000 Hz. This would be a 'low shelf cut' filter.
             %
             % 
-            elseif (q.purpose == 'lowshelf') && (q.gain < 0)
+            elseif strcmp(q.purpose, 'lowshelf') && (q.gain < 0)
                 c = (10^(q.gain/20));
                 pole = 2*c/(tan(pi * q.centre_freq/q.sampling_freq) + c)-1;
-            elseif (q.purpose == 'highshelf') && (q.gain < 0)
+            elseif strcmp(q.purpose, 'highshelf') && (q.gain < 0)
                 c = (10^(q.gain/20));
                 pole = 2/(c*tan(pi * q.centre_freq/q.sampling_freq) + 1)-1;
             else
@@ -275,7 +283,7 @@ classdef filterHelper
             
             % pre-allocate memory for the output:
             output = zeros([samples, channels]);
-            output(1,:) = q.signal(1,:) * pole;
+            output(1,:) = -pole*q.signal(1,:);
             
             % here we use the difference equation from [5] (equation 3.15),
             % except we flip the signs of the terms because we are using
@@ -307,6 +315,9 @@ classdef filterHelper
 % Interpretation:
 %   Returns the input signal after applying a first-order lowpass on the
 %       signal at 5000Hz.
+%
+% Dependencies:
+%   validSignal.m, filterHelper.m 
 %
 % See also allpass1.
 %
@@ -352,6 +363,9 @@ classdef filterHelper
 % Interpretation:
 %   Returns the input signal after applying a first-order highpass on the
 %       signal at 5000Hz.
+%
+% Dependencies:
+%   validSignal.m, filterHelper.m 
 %
 % See also allpass1.
 %
@@ -401,6 +415,9 @@ classdef filterHelper
 % Interpretation:
 %   Returns the input signal after applying a first-order low shelf on the
 %       signal at 5000Hz, with a gain of -5 dB (low cut).
+%
+% Dependencies:
+%   validSignal.m, filterHelper.m 
 %
 % See also lowpass1, allpass1.
 %
@@ -460,6 +477,9 @@ classdef filterHelper
 %   Returns the input signal after applying a first-order high shelf on the
 %       signal at 5000Hz, with a gain of -5 dB (high cut).
 %
+% Dependencies:
+%   validSignal.m, filterHelper.m   
+%
 % See also highpass1, allpass1.
 %
 % github.com/amacraek/m_afx/
@@ -496,6 +516,298 @@ classdef filterHelper
             
         end
         
+        function output = allpass2(centre_freq, Q, sampling_freq,   ...
+                signal, varargin)
+% ALLPASS2 is a second-order tuneable all-pass filter.
+%   It is based on a dual-comb filter system, as described in [5], where
+%   two comb filters work in a feed-forward/feed-backward system with
+%   opposite-sign coefficients so that the comb filters' constructive and
+%   destructive interference patterns cancel one another out. The
+%   second-order allpass is similar to the first-order allpass, except it
+%   has two dual-comb systems working in parallel, with a one-sample delay
+%   on one comb filter and a two-sample delay on the other. The output 
+%   gain is not affected by the filter, but the phase relationship between 
+%   different frequencies is shifted, with the phase shift equal to 180 
+%   degrees (pi) at the centre frequency.
+%
+% See filterHelper.m for more details about the algorithm. 
+%
+% Required arguments:
+%   centre_freq         the frequency (in Hz) where the phase shift of the 
+%                       filter is equal to -180 degrees.
+%   Q                   the quality factor of the filter, which controls
+%                       the bandwidth. 0<Q<0.5. Smaller Q means wider band.
+%   sampling_freq       the sampling frequency (in Hz) of the inputted
+%                       signal.
+%   signal              the input signal with size = [samples, channels].
+%
+% Optional arguments:
+%   purpose             Specifies what the allpass filter's purpose is. If
+%                       using the allpass for a high/low shelf filter,
+%                       small modifications need to be made to the
+%                       algorithm. Accepted purposes are 'general',
+%                       'lowshelf', and 'highshelf'. Default is 'general'.
+%   gain                The gain of the filter, in dB. Required argument 
+%                       for lowshelf and highshelf purpose allpass filters.
+%                       Default value is 0 dB.
+%
+% Example usage:
+%   output = ALLPASS2(5000, 0.4, 44100, signal);
+% Interpretation:
+%   Returns the input signal with the phase shifted continuously over the
+%       signal, with a phase shift of -180 degrees at 5000Hz and a sharp
+%       filter band with Q=0.4. 
+%
+% Dependencies:
+%   validSignal.m, filterHelper.m 
+%
+% For references see filterHelper by clicking below:
+% See also filterHelper.
+%
+% github.com/amacraek/m_afx/
+% Alex MacRae-Korobkov 2018
+            
+            % parsing inputs
+            p = inputParser;
+            addRequired(p, 'centre_freq', @(x) (x<0.5*sampling_freq));
+            addRequired(p, 'Q', @(x) (x<0.5) && (x>0));
+            addRequired(p, 'sampling_freq', @(x) (x~=0));
+            addRequired(p, 'signal', @validSignal);
+            addOptional(p, 'purpose', 'general', @allpass2Type);
+            addOptional(p, 'gain', 0, @(x) (isnumeric(x)));
+            parse(p, centre_freq, Q, sampling_freq, signal, ...
+                varargin{:});
+            q = p.Results;
+            
+            
+            
+            if (q.gain >= 0)
+                % see allpass1 if you're curious about the following line,
+                % remembering that Q is bandwidth / sampling frequency
+                pole_1 = 2/(tan(pi*Q) + 1) - 1;
+                
+            
+            elseif strcmp(q.purpose, 'notch') && (q.gain < 0)
+                % see allpass1 if you're curious about the following line
+                c = (10^(q.gain/20));
+                pole_1 = 2*c/(tan(pi*Q) + c)-1;
+            else
+                error('allpass purpose %s does not accept a negative gain', ...
+                        q.purpose);
+            end
+            
+            % calculating the first pole for the second-order allpass is
+            % the same as calculating the only pole of a first-order 
+            % allpass. the second pole is the real part of the complex
+            % conjugate [7] of the first pole, which is scaled by the
+            % centre frequency of the filter.
+            pole_2 = cos((2*pi) * q.centre_freq / q.sampling_freq) ...
+                     * (1+pole_1);
+            
+            % get the size of the input signal:
+            [samples, channels] = size(q.signal);
+            
+            % pre-allocate memory for the output:
+            output = zeros([samples, channels]);
+            
+            % compute first couple of values outside of loop:
+            output(1,:) = pole_1.*q.signal(1,:);
+            output(2,:) = pole_1.*q.signal(2,:)    ...
+                          - pole_2.*q.signal(1,:)   ...
+                          + pole_2.*output(1,:);
+            
+            % here we use the transfer function from [6], which is the same
+            % as the difference equation in allpass1 except with an added
+            % term. see [8] for a bit more background :)
+            for sample_index = 3:samples
+                output(sample_index,:) =                            ...
+                    q.signal(sample_index - 2,:)                    ...
+                    - pole_2.*q.signal(sample_index - 1,:)          ...
+                    + pole_1.*q.signal(sample_index,:)              ...
+                    + pole_2.*output(sample_index - 1,:)            ...
+                    - pole_1.*output(sample_index - 2,:);
+            end
+        end
+        
+        function output = bandreject2(centre_freq, Q, ... 
+                sampling_freq, signal)
+% BANDREJECT2 is a second-order tuneable bandreject filter.
+%   It uses a second-order allpass filter's phase shift to remove
+%   frequencies surrounding a given centre frequency, with a bandwidth
+%   specified by Q.
+%
+% Required arguments:
+%   centre_freq         the frequency (in Hz) where the phase shift of the 
+%                       filter is equal to -180 degrees, i.e. the centre of
+%                       the bandreject.
+%   Q                   the quality factor of the filter, which controls
+%                       the bandwidth. 0<Q<0.5. Smaller Q means wider band.
+%   sampling_frequency  the sampling frequency (in Hz) of the inputted
+%                       signal.
+%   signal              the input signal with size = [samples, channels].
+%
+% Example usage:
+%   output = BANDREJECT2(5000, 0.4, 44100, signal);
+% Interpretation:
+%   Removes 5000Hz frequency from the signal, using a narrow band (Q=0.4). 
+%   This means that although adjacent frequencies (e.g. 4990Hz or 5010Hz) 
+%   are made quieter, the 'narrow band' only affects frequencies very close
+%   to 5000Hz (in contrast to a wide band, which would attenuate 
+%   frequencies relatively further from 5000Hz than a narrow band).
+%
+% Dependencies:
+%   validSignal.m, filterHelper.m 
+%
+% See also allpass2.
+%
+% github.com/amacraek/m_afx/
+% Alex MacRae-Korobkov 2018
+
+            % parsing inputs
+            p = inputParser;
+            addRequired(p, 'centre_freq', @(x) (x<0.5*sampling_freq));
+            addRequired(p, 'Q', @(x) (x<0.5) && (x>0));
+            addRequired(p, 'sampling_freq', @(x) (x~=0));
+            addRequired(p, 'signal', @validSignal);
+            parse(p, centre_freq, Q, sampling_freq, signal);
+            q = p.Results;
+            
+        % the basic idea is pretty much the same as a lowpass filter, 
+        % except in this case we're using a second-order allpass instead of
+        % a first-order. therefore, the centre frequency will be a -180 deg
+        % phase shift instead of a -90deg phase shift, meaning that the
+        % centre frequency will be *completely removed* by destructive
+        % interference when we add the allpassed signal to the original.
+            ap = filterHelper.allpass2(q.centre_freq, q.Q, ...
+                q.sampling_freq, q.signal);
+            output = (q.signal + ap) ./ 2;
+        end
+        
+        function output = bandpass2(centre_freq, Q, ... 
+                sampling_freq, signal)
+% BANDPASS2 is a second-order tuneable bandreject filter.
+%   It uses a second-order allpass filter's phase shift to extract
+%   frequencies surrounding a given centre frequency, with a bandwidth
+%   specified by Q.
+%
+% Required arguments:
+%   centre_freq         the frequency (in Hz) where the phase shift of the 
+%                       filter is equal to -180 degrees, i.e. the centre of
+%                       the bandpass.
+%   Q                   the quality factor of the filter, which controls
+%                       the bandwidth. 0<Q<0.5. Smaller Q means wider band.
+%   sampling_frequency  the sampling frequency (in Hz) of the inputted
+%                       signal.
+%   signal              the input signal with size = [samples, channels].
+%
+% Example usage:
+%   output = BANDPASS2(5000, 0.4, 44100, signal);
+% Interpretation:
+%   Extracts 5000Hz frequency from the signal, using a narrow band (Q=0.4). 
+%   This means that although adjacent frequencies (e.g. 4990Hz or 5010Hz) 
+%   can 'pass through', the 'narrow band' only allows frequencies very 
+%   close to 5000Hz (in contrast to a wide band, which would allow 
+%   frequencies relatively further from 5000Hz than a narrow band).
+%
+% Dependencies:
+%   validSignal.m, filterHelper.m 
+%
+% See also allpass2.
+%
+% github.com/amacraek/m_afx/
+% Alex MacRae-Korobkov 2018
+
+            % parsing inputs
+            p = inputParser;
+            addRequired(p, 'centre_freq', @(x) (x<0.5*sampling_freq));
+            addRequired(p, 'Q', @(x) (x<0.5) && (x>0));
+            addRequired(p, 'sampling_freq', @(x) (x~=0));
+            addRequired(p, 'signal', @validSignal);
+            parse(p, centre_freq, Q, sampling_freq, signal);
+            q = p.Results;
+            
+        % the basic idea is pretty much the same as a highpass filter, 
+        % except in this case we're using a second-order allpass instead of
+        % a first-order. therefore, the centre frequency will be a -180 deg
+        % phase shift instead of a -90deg phase shift, meaning that the
+        % frequencies further from the centre frequency will be *completely
+        % removed* by destructive interference when we subtract the 
+        % allpassed signal from the original, leaving only the centre
+        % frequency and adjacent frequencies to pass. 
+            ap = filterHelper.allpass2(q.centre_freq, q.Q, ...
+                q.sampling_freq, q.signal);
+            output = (q.signal - ap) ./ 2;
+        end
+        
+        function output = bell2(centre_freq, Q, sampling_freq, ...
+                gain, signal)
+% BELL2 is a second-order tuneable bell peak filter.
+%   It uses a second-order allpass filter's phase shift to alter 
+%   frequencies around a given centre frequency, and then adds the altered 
+%   signal to the original as to reduce or enhance frequencies by the 
+%   specified gain. It is called a 'bell peak' because on a frequency vs.
+%   amplitude graph, the filter resembles a bell shape.
+%
+% Required arguments:
+%   centre_freq         the frequency (in Hz) where the phase shift of the 
+%                       filter is equal to -90 degrees.
+%   Q                   the quality factor of the filter, which controls
+%                       the bandwidth. 0<Q<0.5. Smaller Q means wider band.
+%   sampling_frequency  the sampling frequency (in Hz) of the inputted
+%                       signal.
+%   gain                the gain of the bell filter, in dB. Can be
+%                       positive or negative.
+%   signal              the input signal with size = [samples, channels].
+%
+% Example usage:
+%   output = BELL2(5000, 0.4, 44100, -5, signal);
+% Interpretation:
+%   Returns the input signal with frequencies in the narrow band (Q=0.4)
+%   surrounding 5000Hz reduced, with a maximum reduction of 5 dB at 5000Hz,
+%   and with adjacent frequencies being reduced in a narrow 'bell' shape 
+%   from 5 dB to 0 dB. 
+%
+% Dependencies:
+%   validSignal.m, filterHelper.m   
+%
+% See also allpass2.
+%
+% github.com/amacraek/m_afx/
+% Alex MacRae-Korobkov 2018   
+
+            % parse inputs
+            p = inputParser;
+            addRequired(p, 'centre_freq', @(x) (x<0.5*sampling_freq));
+            addRequired(p, 'Q', @(x) (x<0.5) && (x>0));
+            addRequired(p, 'sampling_freq', @(x) (x~=0));
+            addRequired(p, 'gain', @(x) (isnumeric(x)));
+            addRequired(p, 'signal', @validSignal);
+            parse(p, centre_freq, Q, sampling_freq, gain, signal);
+            q = p.Results;
+            
+            % calculate the allpass signal for the given arguments. note
+            % that we use the 'notch' allpass type here, so that we can
+            % alter the phase shift by the gain and flip the phases if the
+            % gain is negative. 
+            ap = filterHelper.allpass2(q.centre_freq, q.Q, ...
+                q.sampling_freq, q.signal, 'notch', q.gain);
+            
+            % convert the gain from dB value to a proportional scale. 
+            scale = 10^(q.gain/20) - 1;
+            
+            % to understand the bell filter, consider a bell peak increase: 
+            % this is basically the same as a bandpass, except instead of
+            % stopping after subtracting the phase shifted signal from the 
+            % original signal, we add a proportion of this filtered signal
+            % to the original, i.e. we add some fraction of this bandpassed 
+            % signal to the original. this produces an output with some
+            % frequencies enhanced by the specified gain around the bell
+            % shaped peak of the bandpass. 
+            % see the code for  'allpass2' for some more info.
+            output = scale .* (q.signal - ap) ./ 2 + q.signal;
+            
+        end
+        
     end
 end
 
@@ -523,12 +835,38 @@ function valid = allpassType(x)
     end
 end
 
+function valid = allpass2Type(x)
+    
+    % list of currently allowed purposes of allpass filter:
+    allowedTypes = [string('general'),  ...
+                    string('notch')];
+    
+    % string that lists the allowed types, so we can display in error msg:
+    typeList = join( [join('''' + allowedTypes(1,1:end-1) + ''','),     ...
+                      'or ''' + allowedTypes(1,end) + '''.' ] );
+    
+    if string(class(x))~='string' && string(class(x))~='char'
+        error('allPassPurpose:notString', ...
+            'Allpass purpose must be format ''string'' or ''char'', not format ''%s''.', class(x));
+        
+    elseif ~any(allowedTypes == x)
+        error('allPassPurpose:invalidPurpose', ...
+            'Allpass purpose ''%s'' is not an accepted purpose.\n\nAccepted purposes:\n%s', ...
+            x, typeList);       
+    else
+        valid = true;
+    end
+end
+
 %% References
 % [1] http://www2.cs.sfu.ca/~tamaras/filters889/Recursive_Filters.html 
 % [2] https://ccrma.stanford.edu/~jos/fp/Difference_Equation_I.html 
 % [3] https://en.wikipedia.org/wiki/Impulse_response 
 % [4] https://ccrma.stanford.edu/realsimple/DelayVar/Phasing_First_Order_Allpass_Filters.html  
 % [5] https://ccrma.stanford.edu/~jos/pasp/Allpass_Two_Combs.html 
+% [6] https://ccrma.stanford.edu/~jos/pasp/Phasing_2nd_Order_Allpass_Filters.html
+% [7] https://en.wikipedia.org/wiki/Complex_conjugate
+% [8] https://ccrma.stanford.edu/~jos/filters/Two_Pole.html
 
 %% e.g.
 % **1 http://www.wolframalpha.com/input/?i=transfer+function+(-0.509525449494+%2B+1%2Fz)%2F(1+-+0.509525449494%2Fz)+sampling+period+1%2F44100

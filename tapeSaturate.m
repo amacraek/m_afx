@@ -22,6 +22,9 @@ function output = tapeSaturate(signal, knob, varargin)
 %   saturates (distorts) the signal at a strength of 5/10. The outputted
 %   signal is then reduced to 0.5x the normalized amplitude. 
 %
+% Dependencies:
+%   linearNormalize.m, validSignal.m 
+%
 % github.com/amacraek/m_afx/
 % Alex MacRae-Korobkov 2018
 

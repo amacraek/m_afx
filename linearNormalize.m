@@ -20,6 +20,9 @@ function output = linearNormalize(signal, varargin)
 % Interpretation:
 %       Returns the input signal, normalized to [-255, 255]. 
 %
+% Dependencies:
+%   validSignal.m 
+%
 % github.com/amacraek/m_afx/
 % Alex MacRae-Korobkov 2018
     
