@@ -13,7 +13,7 @@ function output = linearNormalize(signal, varargin)
 %               value is 1.
 %
 % Output: 
-%   normalized signal matrix with the same size as input. 
+%   normalized signal with the same size as input. 
 %
 % Example usage:
 %   output = LINEARNORMALIZE(signal, 255)

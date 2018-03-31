@@ -1,14 +1,14 @@
 function output = reverb(signal, sampling_freq, wet_dry, varargin)
 % REVERB is a feedback delay network (FDN) reverberation filter. 
 %   It uses an FDN with four delay lines to simulate acoustic
-%   reverberation. Simply, the algorithm takes the input signal, splits it
-%   to four channels that are then delayed by different numbers of samples
-%   does a few transformations, and feeds these back into the beginning. 
-%   This creates a time-delayed cascade of the signal that sounds like
-%   reverberation (or 'echo') in a large hall, for example. The algorithm
-%   attenuates (reduces intensity of) higher frequencies to reduce
-%   'metallic' sounds by filtering the delay lines individual and then
-%   filtering the wet signal. 
+%   reverberation. The algorithm copies the input signal to four channels 
+%   that are delayed by different numbers of samples, performs a few 
+%   transformations to each channel, then feeds them all back into the 
+%   beginning. This creates a time-delayed cascade of the signal that 
+%   sounds like the reverberation (or 'echo') of a large hall, for example. 
+%   To reduce 'metallic' feedback, the algorithm attenuates (reduces the
+%   intensity of) higher frequencies through a series of lowpass filters at
+%   different steps of processing. 
 %
 % Required arguments:
 %   signal          the audio input, with size = [samples, 2]. Stereo.
@@ -32,7 +32,7 @@ function output = reverb(signal, sampling_freq, wet_dry, varargin)
 %   'decay_hi'      the time, in seconds, for frequencies at half of 
 %                   sampling freq to decay by 60 dB. Fooling with this can 
 %                   be glitchy :) Default value is 0.7.
-%   'post_lp_cut' the cutoff frequency for the lowpass filter on the wet
+%   'post_lp_cut'   the cutoff frequency for the lowpass filter on the wet
 %                   (reverberated) signal before it is added back into the
 %                   original. Default is 10000 Hz.
 %   'pre_lp_cut'    the cutoff frequency for the lowpass filter before the
@@ -53,6 +53,11 @@ function output = reverb(signal, sampling_freq, wet_dry, varargin)
     
     %% default values
     % here, we choose the delay lengths to be primes, suggested in [2].
+    % this way we don't get resonant harmonics, which are caused by delay
+    % lines that share a common multiple. this would come through as a
+    % 'ringing' tone in the reverberation, because the frequency that is
+    % accentuated by the common multiple would be accentuated by two
+    % different delay lines, so it would be louder than others.
     % For more choices, see [3].
     delaylines = [887, 1279, 2089, 3167]; 
     
@@ -64,6 +69,10 @@ function output = reverb(signal, sampling_freq, wet_dry, varargin)
     % time for low/high frequencies to decay by 60 dB, in seconds. 
     decay_lo = 1.5;
     decay_hi = 0.7;
+    
+    % we'll be using this later to filter the reverb signal.
+    % See filterHelper.m if you don't know what this is :+)
+    fh = filterHelper;
     
     %% parsing inputs
     p = inputParser;
@@ -84,13 +93,18 @@ function output = reverb(signal, sampling_freq, wet_dry, varargin)
         warning('Changing the decay time can be glitchy.');
     end
     
-    %% initial declarations
-    
-    % we'll be using this later to filter the reverb signal.
-    % See filterHelper.m if you don't know what this is :+)
-    fh = filterHelper;
-    
+    %% feedback matrix
     % feedback matrix proposed by Stautner and Puckette, see [1].
+    % I've tried a few other feedback matrices, but this one seemed to work
+    % the best. The feedback matrix functions to disperse the energy of
+    % the delay lines. We multiply a vector of each delayed signal at a
+    % given sample number, lets call it [a b c d], by the feedback matrix,
+    % which produces a new vector [a' b' c' d'] with the same magnitude
+    % as [a b c d] but with the amplitudes of each component modified. this
+    % scatters the output across the different delay lines to make the
+    % reverberation sound more realistic, as opposed to having each delay
+    % line feed directly back into itself which would sound too polished
+    % and robotic to be real acoustic reverberation.
     matrix = [  ...
                 0   1   1   0;
                -1   0   0  -1;
@@ -99,40 +113,48 @@ function output = reverb(signal, sampling_freq, wet_dry, varargin)
              ];
     matrix = matrix .* (q.gain/sqrt(2));
     
+    %% convert to mono
     % sadly, the reverb isn't stereo yet - the algorithm needs some love
     % first. I want it to sound a little better before I work in the
     % complexities of stereo processing. 
     mono = (q.signal(:,1) + q.signal(:,2)) / 2; 
     
+    %% pre lowpass filter
     % pre-reverb lowpass. this dampens the intensity of the high-end
     % frequencies, which don't reverberate in air as readily as low-end
     % frequencies.
     mono = fh.lowpass1(q.pre_lp_cut, q.sampling_freq, mono);
     
-    % these values are for adjusting the decay times as a function of
+    %% attenuating high frequencies 
+    % the values below are for adjusting the decay times as a function of
     % frequency, as described in [5]. the idea is that higher frequencies
     % should decay faster to model acoustic reverberation, i.e. when we
-    % create the reverb, which is essentially a form of echo, we want the
+    % create our reverb, which is essentially a form of echo, we want the
     % higher frequencies to echo less (decay faster). since we have four
-    % decay lines with different lengths, we need different lowpass filters
-    % that can account for time differences, so we need to calculate the
+    % delay lines, each with different lengths, we need to calculate the
     % coefficients 'g' and 'p' for each delay line's implementation of the
     % difference equation:
     %           y(n) = g*x(n) - p*y(n-1)
     % which is just a simple feedback lowpass. the r_lo and r_hi are
     % approximations of rates of decay at 0 Hz and (sampling_freq/2) Hz [5]
-    % for each delay line length. we want these rates to amount to the same
-    % decay time between the first instance of the given frequency and the
-    % instance where that frequency is at -60dB, therefore each delay line
-    % will need a different decay rate, so that delays that begin later
-    % will decay at a higher rate as to synchronize with other decays.
+    % for each delay line length. we want the rates across delay lines to 
+    % amount to the same decay time between the instance of any frequency
+    % in the input and the instance where that frequency has become 60dB    
+    % quieter, therefore each delay line will need a different decay rate 
+    % so that delays that begin later will decay at a higher rate as to 
+    % synchronize with other decays.
+    
+    % this equation is from [5], and it is an approximation of decay rate
     r_lo = 1 - (ones(1,4)*(6.91/(q.sampling_freq*q.decay_lo))).* ...
                 q.delaylines;
     r_hi = 1 - (ones(1,4)*(6.91/(q.sampling_freq*q.decay_hi))).* ...
                 q.delaylines;
+    % these are the coefficients for the lowpass filter on decay rate, for
+    % each delay line. 
     g = (2*r_lo .* r_hi) ./ (r_lo + r_hi);
     p = (r_lo - r_hi) ./ (r_lo + r_hi);
     
+    %% tonal correction 
     % a tonal correction filter, proposed by Jot and outlined in [6], is a
     % simple compensation for the filter outlined above. when we make the
     % higher frequencies decay faster, it shifts the tonal properties of
@@ -143,7 +165,7 @@ function output = reverb(signal, sampling_freq, wet_dry, varargin)
     tonal_constant = (1 - q.decay_hi/q.decay_lo) / ...
                      (1 + q.decay_hi/q.decay_lo);
     
-     
+    %% setting up buffer variables and preallocation
     % a bit of a trick here is to use a 'circular buffer' [4] for the
     % sample delays. e.g. for a delay line = 887 samples, we want the
     % value to be 887 samples before the current sample's value, but for
@@ -199,8 +221,7 @@ function output = reverb(signal, sampling_freq, wet_dry, varargin)
     end
     
     %% add reverb to original signal
-    % apply a lowpass filter to the reverb signal, because the high end is
-    % usually over-accentuated a bit. 
+    % post-reverb lowpass, which attenuates higher frequencies again
     reverb_signal = fh.lowpass1(q.post_lp_cut, ...
                                 q.sampling_freq, reverb_signal);
     

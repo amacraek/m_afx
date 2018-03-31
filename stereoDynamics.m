@@ -9,7 +9,7 @@ function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
 % Required arguments:
 %   signal          the audio input, with size = [samples, channels]. The
 %                   input should be a normalized and linearly-scaled signal 
-%                   For normalizing your data, use linearNormalize (bottom)
+%                   For normalizing your data, see linearNormalize below
 %   comp_threshold  the volume threshold for compression in dB, (v < 0)
 %                   signals louder than this will be compressed.
 %   comp_slope      the slope of the compression curve, (m > 0)
@@ -35,7 +35,7 @@ function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
 %                   value is 0.005.
 %
 % Output: 
-%   compressed signal matrix with the same size as input. 
+%   compressed signal with the same size as input. 
 %
 % Example usage:
 %   output = STEREODYNAMICS(signal, -15, 0.3, -25, -0.05, 'rms_width', 0.2)
@@ -67,15 +67,20 @@ function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
     q = p.Results;
 
 %% setting initial values 
-    % rms_amplitude and gain are recalculated as the filter is applied
+    % rms_amplitude and gain are recalculated as the filter is applied, but
+    % we refer to them in the loop so we declare them here
     rms_amplitude = 0;
     gain = 1;
+    
+    % get size of signal
     [samples, channels] = size(q.signal);
+    
+    % preallocate!!
     output = zeros(samples, channels);
 
 %% iteratively apply dynamic gain modification 
     for channel = 1:channels  % treat each channel separately
-        for sample = 1:samples
+        for sample = 1:samples % iterate over each sample
             current_sample = q.signal(sample, channel);
             
             % assuming we have a signal normalized to [-1, 1], we don't
@@ -109,7 +114,15 @@ function output = stereoDynamics(signal, comp_threshold, comp_slope, ...
             % is releasing. we calculate the gain for the current sample as
             % an average of the scaling factor and the previous gain, based 
             % on the width of the appropriate envelope, in order to smooth
-            % the compression. 
+            % the compression.
+            %
+            %  dB                                    ________________
+            % |          ,.---..._                  | :::  - attack  |                           
+            % |        ,': / / / o'''.              | ///  - sustain |                  
+            % |       ,:::/ / / /oooooo`'..         | ooo  - release |                    
+            % |       ,::: / / / ooooooooo`''.      |________________|                         
+            % |______;::::/ / / /ooooooooooooo`'''.____________________time 
+            %      
             if scaling_factor < gain
                 gain = (1 - q.attack) * gain + q.attack * scaling_factor;
             else

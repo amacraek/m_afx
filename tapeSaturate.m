@@ -52,7 +52,9 @@ function output = tapeSaturate(signal, knob, varargin)
         for sample = 1:samples
             current_sample = normSignal(sample, channel);
             % basic idea is to make quieter signals louder by transforming
-            % the amplitudes with a curved function.
+            % the amplitudes with a curved function. check out the graph
+            % for y=tanh(x), and picture y as the output signal and x as
+            % the input signal
             % i tried a piecewise log growth function for this first, but
             % then decided to use a tanh function to transform the values
             % because it is easy to make steeper (for more saturation) and

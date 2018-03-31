@@ -9,7 +9,7 @@ classdef filterHelper
     % Dependencies:
     %   validSignal.m 
     % References:
-    % <a href="matlab:web('http://www2.cs.sfu.ca/~tamaras/filters889/Recursive_Filters.html')">[1]</a> <a href="matlab:web('https://ccrma.stanford.edu/~jos/fp/Difference_Equation_I.html')">[2]</a> <a href="matlab:web('https://en.wikipedia.org/wiki/Impulse_response')">[3]</a> <a href="matlab:web('https://ccrma.stanford.edu/realsimple/DelayVar/Phasing_First_Order_Allpass_Filters.html')">[4]</a> <a href="matlab:web('https://ccrma.stanford.edu/~jos/pasp/Allpass_Two_Combs.html')">[5]</a> 
+    % <a href="matlab:web('http://www2.cs.sfu.ca/~tamaras/filters889/Recursive_Filters.html')">[1]</a> <a href="matlab:web('https://ccrma.stanford.edu/~jos/fp/Difference_Equation_I.html')">[2]</a> <a href="matlab:web('https://en.wikipedia.org/wiki/Impulse_response')">[3]</a> <a href="matlab:web('https://ccrma.stanford.edu/realsimple/DelayVar/Phasing_First_Order_Allpass_Filters.html')">[4]</a> <a href="matlab:web('https://ccrma.stanford.edu/~jos/pasp/Allpass_Two_Combs.html')">[5]</a> <a href="matlab:web('https://ccrma.stanford.edu/~jos/pasp/Phasing_2nd_Order_Allpass_Filters.html')">[6]</a> <a href="matlab:web('https://en.wikipedia.org/wiki/Complex_conjugate')">[7]</a> <a href="matlab:web('https://ccrma.stanford.edu/~jos/filters/Two_Pole.html')">[8]</a> 
     
 % ****Don't open the comment block above, it contains a very wide line.**** 
 
