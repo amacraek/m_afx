@@ -2,6 +2,10 @@
 MATLAB Digital Signal Processing and Audio Effects  
 By Alex MacRae-Korobkov, 2018  
 
+# Video
+
+[![Digital Signal Processing and Audio Effects in MATLAB [YouTube]](http://img.youtube.com/vi/M5rrg5rFgQs/0.jpg)](http://www.youtube.com/watch?v=M5rrg5rFgQs "Digital Signal Processing and Audio Effects in MATLAB")
+
 # Purpose
 The purpose of this repository is to offer insight into digital (i.e. discrete) signal processing, specifically **in the context of audio engineering** applications. Though there might practical applications for this repository, it is designed primarily for **educational purposes,** and as such the code will contain long (and ugly) comment blocks in which I try to add context and develop understanding.  
 
